@@ -2,84 +2,89 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Base Background Styles */
 .cosmic-bg {
-  background: #000;
-  position: relative;
-  overflow: hidden;
+  @apply bg-black relative overflow-hidden;
   min-height: 100vh;
   min-height: -webkit-fill-available;
 }
 
+/* Milky Way Background */
 .milky-way {
-  position: fixed;
+  @apply fixed;
   width: 200%;
   height: 200%;
   top: -50%;
   left: -50%;
-  background: url('https://images.unsplash.com/photo-1506703719100-a0f3a48c0f86?auto=format&fit=crop&w=2400&q=100');
+  background-image: url('https://images.pexels.com/photos/2387877/pexels-photo-2387877.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2');
   background-size: cover;
   background-position: center;
-  opacity: 0.7;
-  animation: rotate 240s linear infinite;
-  transform-origin: center center;
+  opacity: 0.9;
+  z-index: 0;
 }
 
-@keyframes rotate {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-
+/* Star Twinkling System */
 .stars-container {
-  position: fixed;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
+  @apply fixed w-full h-full pointer-events-none;
+  z-index: 1;
 }
 
 .star {
-  position: absolute;
-  background: #FFF;
-  border-radius: 50%;
-  animation: twinkle var(--twinkle-duration) ease-in-out infinite;
+  @apply absolute bg-white rounded-full;
+  animation: twinkle 3s infinite ease-in-out;
 }
 
 @keyframes twinkle {
-  0%, 100% { opacity: 0.2; transform: scale(1); }
-  50% { opacity: 1; transform: scale(1.2); }
+  0%, 100% { 
+    opacity: 0.3; 
+    transform: scale(1);
+  }
+  50% { 
+    opacity: 1;
+    transform: scale(1.2);
+  }
 }
 
-.ios-blur {
-  backdrop-filter: blur(12px) saturate(180%);
-  background-color: rgba(17, 25, 40, 0.65);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+/* Progress Ring Styles */
+.progress-ring circle {
+  transition: stroke-dashoffset 0.3s linear;
 }
 
-.ios-button {
-  backdrop-filter: blur(12px) saturate(180%);
-  background-color: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 4px 16px 0 rgba(0, 0, 0, 0.2);
-  transition: all 0.2s ease;
+/* Base Button Styles */
+button {
+  @apply transition-all duration-200 ease-in-out;
 }
 
-.ios-button:active {
-  transform: scale(0.96);
-  background-color: rgba(255, 255, 255, 0.15);
+/* Mobile Optimizations */
+@media (max-width: 767px) {
+  .milky-way {
+    width: 150%;
+    height: 150%;
+    top: -25%;
+    left: -25%;
+    opacity: 0.85;
+  }
+
+  .counter-button {
+    @apply w-16 h-16;
+  }
 }
 
-.ios-select {
-  appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='white'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 1rem center;
-  background-size: 1.5em;
+@media (max-width: 640px) {
+  .milky-way {
+    width: 120%;
+    height: 120%;
+    top: -10%;
+    left: -10%;
+  }
 }
 
+/* Text Styles */
+.arabic-text {
+  font-family: 'Noto Sans Arabic', Arial, sans-serif;
+}
+
+/* Blessing Animation */
 .blessing-animation {
   animation: blessing 0.5s cubic-bezier(0.23, 1, 0.32, 1) forwards;
 }
@@ -95,26 +100,15 @@
   }
 }
 
-.progress-ring {
-  transform: rotate(-90deg);
+/* Utility Classes */
+.bg-white\/10 {
+  background-color: rgba(255, 255, 255, 0.1);
 }
 
-.progress-ring__circle {
-  transition: stroke-dashoffset 0.3s ease;
+.border-white\/20 {
+  border-color: rgba(255, 255, 255, 0.2);
 }
 
-.arabic-text {
-  font-family: 'Noto Sans Arabic', Arial, sans-serif;
-}
-
-@media (max-width: 640px) {
-  .counter-button {
-    width: 4.5rem !important;
-    height: 4.5rem !important;
-  }
-  
-  .counter-button svg {
-    width: 1.75rem !important;
-    height: 1.75rem !important;
-  }
+.hover\:bg-white\/20:hover {
+  background-color: rgba(255, 255, 255, 0.2);
 }

@@ -47,17 +47,23 @@ const dhikrList: Dhikr[] = [
   }
 ];
 
+
 function CosmicBackground() {
   const [stars, setStars] = useState<{ top: number; left: number; size: number; duration: number }[]>([]);
 
   useEffect(() => {
-    const newStars = Array.from({ length: 150 }, () => ({
-      top: Math.random() * 100,
-      left: Math.random() * 100,
-      size: Math.random() * 2 + 1,
-      duration: Math.random() * 3 + 2
-    }));
-    setStars(newStars);
+    const createStars = () => {
+      const newStars = Array.from({ length: 150 }, () => ({
+        top: Math.random() * 100,
+        left: Math.random() * 100,
+        size: Math.random() * 2 + 1,
+        duration: Math.random() * 3 + 2
+      }));
+      setStars(newStars);
+    };
+    createStars();
+    window.addEventListener('resize', createStars);
+    return () => window.removeEventListener('resize', createStars);
   }, []);
 
   return (
@@ -73,8 +79,9 @@ function CosmicBackground() {
               left: `${star.left}%`,
               width: `${star.size}px`,
               height: `${star.size}px`,
-              '--twinkle-duration': `${star.duration}s`
-            } as any}
+              animationDuration: `${star.duration}s`,
+              opacity: Math.random() * 0.5 + 0.3
+            }}
           />
         ))}
       </div>
@@ -82,24 +89,25 @@ function CosmicBackground() {
   );
 }
 
-function CircularProgress({ progress }: { progress: number }) {
-  const radius = 48;
+function CircularProgress({ progress, count }: { progress: number; count: number }) {
+  const radius = 45;
   const circumference = radius * 2 * Math.PI;
   const strokeDashoffset = circumference - (progress / 100) * circumference;
 
   return (
-    <svg className="progress-ring" width="100" height="100">
+    <svg className="progress-ring" width="100" height="100" viewBox="0 0 100 100">
+      {/* Background Circle */}
       <circle
-        stroke="rgba(255, 255, 255, 0.1)"
+        stroke="#e5e7eb"
         fill="transparent"
         strokeWidth="3"
         r={radius}
         cx="50"
         cy="50"
       />
+      {/* Progress Circle */}
       <circle
-        className="progress-ring__circle"
-        stroke="white"
+        stroke="#ffffff"
         fill="transparent"
         strokeWidth="3"
         strokeLinecap="round"
@@ -108,24 +116,38 @@ function CircularProgress({ progress }: { progress: number }) {
         cy="50"
         style={{
           strokeDasharray: `${circumference} ${circumference}`,
-          strokeDashoffset
+          strokeDashoffset,
         }}
       />
+      {/* Perfectly Centered Text */}
+      <text
+        x="50%"
+        y="50%"
+        textAnchor="middle"
+        dominantBaseline="middle" 
+        className="fill-white text-4xl font-bold"
+      >
+        {count}
+      </text>
     </svg>
   );
 }
+
+
+
+
 
 function App() {
   const [count, setCount] = useState(() => {
     const saved = localStorage.getItem('tasbihCount');
     return saved ? parseInt(saved, 10) : 0;
   });
-  
+
   const [selectedDhikr, setSelectedDhikr] = useState(() => {
     const saved = localStorage.getItem('selectedDhikr');
     return saved ? dhikrList.find(d => d.name === saved) || dhikrList[0] : dhikrList[0];
   });
-  
+
   const [target, setTarget] = useState(() => {
     const saved = localStorage.getItem('tasbihTarget');
     return saved ? parseInt(saved, 10) : 33;
@@ -157,7 +179,7 @@ function App() {
       setCount(prev => prev + 1);
       lastTapTime.current = Date.now();
       if (vibrationEnabled.current && 'vibrate' in navigator) {
-        navigator.vibrate(50);
+        navigator.vibrate(30);
       }
     }
   }, [count, target]);
@@ -186,16 +208,16 @@ function App() {
   return (
     <div className="cosmic-bg">
       <CosmicBackground />
-      
+
       <div className="relative z-10 container mx-auto px-4 py-6 max-w-lg min-h-screen flex flex-col">
-        <div className="flex-1 space-y-4">
+        <div className="flex-1 space-y-6">
           {/* Header */}
-          <div className="text-center mb-6">
-            <h1 className="text-3xl font-bold mb-1 text-white">
-              Tasbeeh anywhere!
+          <div className="text-center mb-8">
+            <h1 className="text-3xl font-bold mb-2 text-white">
+              Digital Tasbeeh
             </h1>
-            <p className="text-xs text-white/70">
-              Remember Allah with every breath
+            <p className="text-sm text-gray-300">
+              Simple and clean remembrance counter
             </p>
           </div>
 
@@ -210,95 +232,92 @@ function App() {
                 resetCounter();
               }
             }}
-            className="w-full p-3 rounded-xl ios-blur ios-select text-white text-center text-sm"
+            className="w-full p-3 bg-white/10 rounded-lg text-white text-center border border-white/20 focus:outline-none"
           >
             {dhikrList.map((dhikr) => (
-              <option key={dhikr.name} value={dhikr.name} className="bg-gray-900">
+              <option key={dhikr.name} value={dhikr.name} className="bg-gray-800">
                 {dhikr.name}
               </option>
             ))}
           </select>
 
           {/* Arabic Text */}
-          <div 
-            className="text-center p-5 rounded-xl ios-blur"
+          <div
+            className="text-center p-5 rounded-lg bg-white/10 border border-white/20"
             onClick={() => setShowVirtues(!showVirtues)}
           >
-            <p className="arabic-text text-2xl mb-2 text-white">
+            <p className="arabic-text text-2xl mb-3 text-white">
               {selectedDhikr.arabic}
             </p>
-            <p className="text-xs mb-1 text-white/70">{selectedDhikr.meaning}</p>
-            <div className={`text-xs text-white/60 transition-all duration-300 ${showVirtues ? 'opacity-100 max-h-20' : 'opacity-0 max-h-0'} overflow-hidden`}>
+            <p className="text-sm text-gray-300">{selectedDhikr.meaning}</p>
+            <div className={`text-sm text-gray-400 transition-all ${
+              showVirtues ? 'opacity-100 mt-3' : 'opacity-0 h-0'
+            }`}>
               {selectedDhikr.virtues}
             </div>
           </div>
 
           {/* Counter Display */}
           <div className="relative flex flex-col items-center">
-            <div className="absolute inset-0 flex items-center justify-center">
+            <div className="absolute inset-5 flex items-center justify-center">
               <div className="text-4xl font-bold text-white">{count}</div>
             </div>
             <CircularProgress progress={progress} />
-            <div className="mt-1 text-xs text-white/70">Target: {target}</div>
+            <div className="mt-3 text-sm text-gray-300">
+              Target: {target}
+            </div>
           </div>
 
           {/* Counter Buttons */}
-          <div className="flex justify-center gap-4 mt-6">
+          <div className="flex justify-center gap-4 mt-8">
             <button
               onClick={resetCounter}
-              className="counter-button p-4 rounded-full ios-button"
+              className="p-4 bg-white/10 rounded-full border border-white/20 hover:bg-white/20 transition-colors"
             >
-              <RefreshCw size={20} className="text-white" />
+              <RefreshCw size={24} className="text-white" />
             </button>
 
             <button
               onClick={handleIncrement}
               disabled={count >= target}
-              className={`
-                counter-button w-20 h-20 rounded-full ios-button
-                flex items-center justify-center
-                ${count >= target ? 'opacity-50' : ''}
-              `}
+              className={`w-20 h-20 rounded-full flex items-center justify-center ${
+                count >= target ? 'bg-gray-500' : 'bg-green-500 hover:bg-green-600'
+              } transition-colors`}
             >
-              <Heart 
-                size={32} 
-                className="text-white"
-                style={{
-                  transform: `scale(${Date.now() - lastTapTime.current < 200 ? 1.1 : 1})`,
-                  transition: 'transform 0.2s ease'
-                }}
-              />
+              <Heart size={32} className="text-white" />
             </button>
 
             <button
               onClick={() => {
                 vibrationEnabled.current = !vibrationEnabled.current;
                 if (vibrationEnabled.current && 'vibrate' in navigator) {
-                  navigator.vibrate(50);
+                  navigator.vibrate(30);
                 }
               }}
-              className="counter-button p-4 rounded-full ios-button"
+              className="p-4 bg-white/10 rounded-full border border-white/20 hover:bg-white/20 transition-colors"
             >
-              <Settings size={20} className="text-white" />
+              <Settings size={24} className="text-white" />
             </button>
-          </div>
-          <div className='flex justify-center gap-4 mt-10 items-center text-white text-lg '>
-          <p> Developed by Ubaidullah</p>
           </div>
         </div>
 
         {/* Blessing Message */}
         {showBlessing && (
-          <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 blessing-animation z-50">
-            <div className="px-6 py-4 rounded-xl ios-blur text-center">
-              <Star className="w-10 h-10 mx-auto mb-2 text-white" />
-              <h2 className="text-lg font-bold mb-1 text-white">MashaAllah!</h2>
-              <p className="text-xs text-white/70">May Allah accept your worship</p>
+          <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50">
+            <div className="px-6 py-4 bg-white/10 backdrop-blur-sm rounded-lg border border-white/20 text-center">
+              <Star className="w-8 h-8 mx-auto mb-2 text-white" />
+              <h2 className="text-lg font-bold text-white">MashaAllah!</h2>
+              <p className="text-sm text-gray-300">May Allah accept your worship</p>
             </div>
           </div>
         )}
+
+        <div className="text-center mt-8">
+          <p className="text-sm text-gray-400">
+            Developed by Ubaidullah
+          </p>
+        </div>
       </div>
-     
     </div>
   );
 }
